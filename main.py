@@ -23,17 +23,19 @@ def getMaybeImage(grayimage):
 #@app.route('/', methods = ['POST'])
 @app.route('/')
 def hello_world():
+  response = {}
   MaybeImage = getMaybeImage(imageMatrix)
   maybe_posture   = determine_posture(MaybeImage)
   maybe_slouching = detect_slouching(maybe_posture, distance_reference, thoracolumbar_tolerance, cervical_tolerance)
 
   if maybe_slouching.success:
         slouching_results  = maybe_slouching.result
-
-        body_slouching = slouching_results.get('body_slouching')
-        head_tilting   = slouching_results.get('head_tilting')
-
-  return 'body_slouching: {0}, head_tilting: {1}'.format(body_slouching, head_tilting)
+        response['slouching'] = slouching_results.get('body_slouching')
+        response['head_tilt'] = slouching_results.get('head_tilting')
+        response['status'] = 1
+  else:
+    response['status'] = 0
+  return jsonify(response)
 
 #@app.route('/setup', methods = ['POST'])
 #def distance_setup():
@@ -52,8 +54,8 @@ def setup():
   else:
     print("Error:", maybe_current_posture.result)
     response['status'] = 0
-    
+
   return jsonify(response)
 
 if __name__ == '__main__':
-  app.run(debug = True)
+  app.run(host="0.0.0.0",debug = True)
