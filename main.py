@@ -17,7 +17,7 @@ api = Api(app)
 #THINGS TO BE RECIEVED VIA POST REQUEST
 imageMatrix = np.loadtxt("matrix.txt")
 imageMatrix = np.array(imageMatrix, dtype='uint8')
-distance_reference = 248.965861114
+#distance_reference = 248.965861114
 thoracolumbar_tolerance = 0.05
 cervical_tolerance = 0.35
 
@@ -27,22 +27,22 @@ Maybe = namedtuple('Maybe', ['success','result'])
 def getMaybeImage(grayimage):
   return Maybe(True, grayimage)
 
-@app.route('/')
-def hello_world():
-  response = {}
-  MaybeImage = getMaybeImage(imageMatrix)
-  maybe_posture   = determine_posture(MaybeImage)
+# @app.route('/')
+# def hello_world():
+#   response = {}
+#   MaybeImage = getMaybeImage(imageMatrix)
+#   maybe_posture   = determine_posture(MaybeImage)
 
-  maybe_slouching = detect_slouching(maybe_posture, distance_reference, thoracolumbar_tolerance, cervical_tolerance)
+#   maybe_slouching = detect_slouching(maybe_posture, distance_reference, thoracolumbar_tolerance, cervical_tolerance)
 
-  if maybe_slouching.success:
-        slouching_results  = maybe_slouching.result
-        response['slouching'] = slouching_results.get('body_slouching')
-        response['head_tilt'] = slouching_results.get('head_tilting')
-        response['status'] = 1
-  else:
-    response['status'] = 0
-  return jsonify(response)
+#   if maybe_slouching.success:
+#         slouching_results  = maybe_slouching.result
+#         response['slouching'] = slouching_results.get('body_slouching')
+#         response['head_tilt'] = slouching_results.get('head_tilting')
+#         response['status'] = 1
+#   else:
+#     response['status'] = 0
+#   return jsonify(response)
 
 
 #@app.route('/setup', methods = ['POST'])
@@ -86,7 +86,7 @@ class Ner(Resource):
     # print request.files['photo']
     photo = request.form['photo']
     image = stringToImage(photo.split(",")[1])
-    image.show()
+    # image.show()
     y = toGRAY(image)
     # print str(y)
     response = {}
@@ -94,7 +94,7 @@ class Ner(Resource):
     maybe_current_posture = determine_posture(maybe_image)
 
     if maybe_current_posture.success:
-      distance_reference = str(maybe_current_posture.result.get('distance'))
+      distance_reference = maybe_current_posture.result.get('distance')
       #config.config_file['MAIN']['distance_reference'] = distance_reference
       print("Reference value detected as:", maybe_current_posture.result)
       response['status'] = 1
