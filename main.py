@@ -4,8 +4,15 @@ from slouchy_main import *
 import numpy as np
 from flask_cors import CORS
 from collections import namedtuple
+from flask_restful import Resource, Api
+from PIL import Image
+import io
+import cv2
+import base64 
+import numpy as np
 app = Flask(__name__)
 CORS(app)
+api = Api(app)
 
 #THINGS TO BE RECIEVED VIA POST REQUEST
 imageMatrix = np.loadtxt("matrix.txt")
@@ -20,7 +27,6 @@ Maybe = namedtuple('Maybe', ['success','result'])
 def getMaybeImage(grayimage):
   return Maybe(True, grayimage)
 
-#@app.route('/', methods = ['POST'])
 @app.route('/')
 def hello_world():
   response = {}
@@ -56,6 +62,47 @@ def setup():
     response['status'] = 0
 
   return jsonify(response)
+
+# @app.route('/photo', methods = ['POST'])
+# def recieve_photo():
+#   print request.args.get('photo')
+#   response = {}
+#   response['status'] = 1
+#   return jsonify(response)
+# Take in base64 string and return PIL image
+def stringToImage(base64_string):
+    imgdata = base64.b64decode(base64_string)
+    return Image.open(io.BytesIO(imgdata))
+
+# convert PIL Image to an RGB image( technically a numpy array ) that's compatible with opencv
+def toGRAY(image):
+    return cv2.cvtColor(np.array(image), cv2.COLOR_BGR2GRAY)
+
+class Ner(Resource):
+  def post(self):
+    print "bikram"
+    # print request.files['photo']
+    photo = request.form['photo']
+    image = stringToImage(photo.split(",")[1])
+    image.show()
+    y = toGRAY(image)
+    # print str(y)
+    response = {}
+    maybe_image           = getMaybeImage(y)
+    maybe_current_posture = determine_posture(maybe_image)
+
+    if maybe_current_posture.success:
+      distance_reference = str(maybe_current_posture.result.get('distance'))
+      #config.config_file['MAIN']['distance_reference'] = distance_reference
+      print("Reference value detected as:", maybe_current_posture.result)
+      response['status'] = 1
+      response['distance_reference'] = distance_reference
+    else:
+      print("Error:", maybe_current_posture.result)
+      response['status'] = 0
+
+    return jsonify(response)
+api.add_resource(Ner,'/photo')
 
 if __name__ == '__main__':
   app.run(host="0.0.0.0",debug = True)
