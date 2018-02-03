@@ -32,6 +32,7 @@ def hello_world():
   response = {}
   MaybeImage = getMaybeImage(imageMatrix)
   maybe_posture   = determine_posture(MaybeImage)
+
   maybe_slouching = detect_slouching(maybe_posture, distance_reference, thoracolumbar_tolerance, cervical_tolerance)
 
   if maybe_slouching.success:
@@ -42,6 +43,7 @@ def hello_world():
   else:
     response['status'] = 0
   return jsonify(response)
+
 
 #@app.route('/setup', methods = ['POST'])
 #def distance_setup():
@@ -96,7 +98,13 @@ class Ner(Resource):
       #config.config_file['MAIN']['distance_reference'] = distance_reference
       print("Reference value detected as:", maybe_current_posture.result)
       response['status'] = 1
-      response['distance_reference'] = distance_reference
+      if request.form['distance_reference'] == 0:
+        response['distance_reference'] = distance_reference
+      else:
+        maybe_slouching = detect_slouching(maybe_posture, distance_reference, thoracolumbar_tolerance, cervical_tolerance)
+        slouching_results  = maybe_slouching.result
+        response['slouching'] = slouching_results.get('body_slouching')
+        response['head_tilt'] = slouching_results.get('head_tilting')
     else:
       print("Error:", maybe_current_posture.result)
       response['status'] = 0
@@ -105,4 +113,4 @@ class Ner(Resource):
 api.add_resource(Ner,'/photo')
 
 if __name__ == '__main__':
-  app.run(host="0.0.0.0",debug = True)
+  app.run(debug = True)
