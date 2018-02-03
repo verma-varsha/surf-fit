@@ -5,6 +5,7 @@ import numpy as np
 from flask_cors import CORS
 from collections import namedtuple
 app = Flask(__name__)
+CORS(app)
 
 #THINGS TO BE RECIEVED VIA POST REQUEST
 imageMatrix = np.loadtxt("matrix.txt")
@@ -36,6 +37,23 @@ def hello_world():
 
 #@app.route('/setup', methods = ['POST'])
 #def distance_setup():
+@app.route('/setup')
+def setup():
+  response = {}
+  maybe_image           = getMaybeImage(imageMatrix)
+  maybe_current_posture = determine_posture(maybe_image)
+
+  if maybe_current_posture.success:
+    distance_reference = str(maybe_current_posture.result.get('distance'))
+    #config.config_file['MAIN']['distance_reference'] = distance_reference
+    print("Reference value detected as:", maybe_current_posture.result)
+    response['status'] = 1
+    response['distance_reference'] = distance_reference
+  else:
+    print("Error:", maybe_current_posture.result)
+    response['status'] = 0
+    
+  return jsonify(response)
 
 if __name__ == '__main__':
-  app.run()
+  app.run(debug = True)
