@@ -95,15 +95,6 @@ def determine_distance(MaybeFace):
 
   return Maybe(True, distance)
 
-def get_face_width(MaybeFace):
-  if MaybeFace.success:
-    (x, y, w, h) = MaybeFace.result
-  else:
-    return MaybeFace
-
-  (x, y, w, h) = MaybeFace.result
-  return Maybe(True, w)
-
 
 
 # MaybeImage -> MaybePosture
@@ -154,7 +145,7 @@ def detect_face(MaybeImage):
   else:
     return MaybeImage
 
-  faceCascade = cv2.CascadeClassifier(haarcascade_frontalface_default.xml) # Load face classifier
+  faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml') # Load face classifier
 
   major_ver = (cv2.__version__).split('.')[0]
 
@@ -183,7 +174,7 @@ lighting.")
 
 def find_head_tilt(face):
   """Take one facial image and return the angle (only magnitude) of its tilt"""
-  classifier = cv2.CascadeClassifier(haarcascade_eye.xml)
+  classifier = cv2.CascadeClassifier('haarcascade_eye.xml')
 
   if classifier.empty():
     return Maybe(False, "Empty classifier")
@@ -208,7 +199,7 @@ def find_head_tilt(face):
   return Maybe(False, "No eyes found")
 
 
-def detect_slouching(MaybePos, distance_reference, ):
+def detect_slouching(MaybePos, distance_reference, thoracolumbar_tolerance, cervical_tolerance):
   """
   Use provide postural information to determine if the subject is slouching.
 

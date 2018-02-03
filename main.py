@@ -1,9 +1,41 @@
-from flask import Flask
+from flask import Flask, request, jsonify
+import json
+from slouchy_main import * 
+import numpy as np
+from flask_cors import CORS
+from collections import namedtuple
 app = Flask(__name__)
 
+#THINGS TO BE RECIEVED VIA POST REQUEST
+imageMatrix = np.loadtxt("matrix.txt")
+imageMatrix = np.array(imageMatrix, dtype='uint8')
+distance_reference = 248.965861114
+thoracolumbar_tolerance = 0.05
+cervical_tolerance = 0.35
+
+Maybe = namedtuple('Maybe', ['success','result'])
+#MaybeImage = (True, imageMatrix)
+
+def getMaybeImage(grayimage):
+  return Maybe(True, grayimage)
+
+#@app.route('/', methods = ['POST'])
 @app.route('/')
 def hello_world():
-  return 'Hello, Varsha!'
+  MaybeImage = getMaybeImage(imageMatrix)
+  maybe_posture   = determine_posture(MaybeImage)
+  maybe_slouching = detect_slouching(maybe_posture, distance_reference, thoracolumbar_tolerance, cervical_tolerance)
+
+  if maybe_slouching.success:
+        slouching_results  = maybe_slouching.result
+
+        body_slouching = slouching_results.get('body_slouching')
+        head_tilting   = slouching_results.get('head_tilting')
+
+  return 'body_slouching: {0}, head_tilting: {1}'.format(body_slouching, head_tilting)
+
+#@app.route('/setup', methods = ['POST'])
+#def distance_setup():
 
 if __name__ == '__main__':
   app.run()
