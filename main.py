@@ -101,7 +101,7 @@ class Ner(Resource):
       if request.form['distance_reference'] == 0:
         response['distance_reference'] = distance_reference
       else:
-        maybe_slouching = detect_slouching(maybe_posture, distance_reference, thoracolumbar_tolerance, cervical_tolerance)
+        maybe_slouching = detect_slouching(maybe_current_posture, distance_reference, thoracolumbar_tolerance, cervical_tolerance)
         slouching_results  = maybe_slouching.result
         response['slouching'] = slouching_results.get('body_slouching')
         response['head_tilt'] = slouching_results.get('head_tilting')
