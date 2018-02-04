@@ -98,13 +98,15 @@ class Ner(Resource):
       #config.config_file['MAIN']['distance_reference'] = distance_reference
       print("Reference value detected as:", maybe_current_posture.result)
       response['status'] = 1
-      if request.form['distance_reference'] == 0:
+      d = int(float(request.form['distance_reference']))
+      if d == 0:
         response['distance_reference'] = distance_reference
       else:
-        maybe_slouching = detect_slouching(maybe_current_posture, distance_reference, thoracolumbar_tolerance, cervical_tolerance)
+        maybe_slouching = detect_slouching(maybe_current_posture, d, thoracolumbar_tolerance, cervical_tolerance)
         slouching_results  = maybe_slouching.result
         response['slouching'] = slouching_results.get('body_slouching')
         response['head_tilt'] = slouching_results.get('head_tilting')
+        response['distance_reference'] = d
     else:
       print("Error:", maybe_current_posture.result)
       response['status'] = 0
